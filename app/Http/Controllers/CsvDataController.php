@@ -45,7 +45,48 @@ class CsvDataController extends Controller
      */
     public function store(Request $request)
     {
-        return response()->json(['success' => "Route test"]);
+        // Validate request 
+      $request->validate(['csvfile' => 'required']);
+      //get path of csvfile
+      $path = $request->file('csvfile')->getRealPath();
+      //map to array data from file
+      $data = array_map('str_getcsv', file($path));
+     
+      $header = $data[0]; //Get data from header row 1
+      $validate = $this->validateHeader($header); // Filter data of header row through our custom filter 
+      $result=array();
+      // If we have csv file with our header colums
+      if( $validate == true )
+      {
+
+      }
+      
+      if( $validate == true )
+      {
+          return response()->json(['success' => "Data parsed successfully",
+          'result' => $result]);
+        }
+        else
+        {
+            return response()->json(['error' => 'Your .CSV headers are not correct. Must be: date,area,average_price,code,houses_sold,no_of_crimes,borough_flag']);
+        }
+    }
+    //Filter header row to check if contains our columns
+    public function validateHeader($h)
+    {
+        $validate = false;
+
+        if( $h[0] == 'date'
+        && $h[1] == 'area'
+        && $h[2] == 'average_price'
+        && $h[3] == 'code'
+        && $h[4] == 'houses_sold'
+        && $h[5] == 'no_of_crimes'
+        && $h[6] == 'borough_flag')
+        {
+            $validate = true;
+        }
+        return $validate;
     }
 
     /**
