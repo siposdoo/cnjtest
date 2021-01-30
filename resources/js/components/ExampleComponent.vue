@@ -57,16 +57,29 @@
 
 <script>
 export default {
-  mounted() {},
+  mounted() {
+      this.getMysqlInfo()
+  },
   data() {
     return {
       csvFile: null,
       lastInsertedId: null,
       rowCounts: null,
-      saveToMysql:0
+      saveToMysql: 0,
     };
   },
   methods: {
+    getMysqlInfo() {
+      this.$http
+        .get("/api/getinfo")
+        .then((response) => {
+          this.lastInsertedId = response.data.result.lastID;
+          this.rowCounts = response.data.result.count;
+        })
+        .catch((error) => {
+          console.log(response.data);
+        });
+    },
     submitFile() {
       const data = new FormData();
       data.append("csvfile", this.csvFile);
@@ -79,10 +92,9 @@ export default {
         })
         .then((response) => {
           if (response.data.error) {
-            
           }
           if (response.data.success) {
-            
+              this.getMysqlInfo()
           }
         })
         .catch((error) => {});
