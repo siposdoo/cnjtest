@@ -78,8 +78,8 @@ export default {
       saveToMysql: 0,
       showErr: false,
       showSuccess: false,
-      contentSuccess: "",
-      contentErr: ""
+      contentSuccess: null,
+      contentErr: null
     };
   },
   methods: {
