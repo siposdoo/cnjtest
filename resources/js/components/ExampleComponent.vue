@@ -38,6 +38,16 @@
               </button>
             </b-col>
           </b-row>
+           <b-row v-if="showErr" class="mt-3 w-100">
+            <b-alert dismissible variant="danger" :show="showErr">{{
+              contentErr
+            }}</b-alert>
+          </b-row>
+          <b-row v-if="showSuccess" class="mt-3 w-100">
+            <b-alert dismissible variant="success" :show="showSuccess">{{
+              contentSuccess
+            }}</b-alert>
+          </b-row>
         </b-col>
         <b-col>
           <b-row>
@@ -66,6 +76,10 @@ export default {
       lastInsertedId: null,
       rowCounts: null,
       saveToMysql: 0,
+      showErr: false,
+      showSuccess: false,
+      contentSuccess: "",
+      contentErr: ""
     };
   },
   methods: {
@@ -92,9 +106,16 @@ export default {
         })
         .then((response) => {
           if (response.data.error) {
+              this.showErr = true
+              this.contentErr = response.data.error
           }
           if (response.data.success) {
+
               this.getMysqlInfo()
+              
+              this.showSuccess = true
+              this.contentSuccess = response.data.success
+
           }
         })
         .catch((error) => {});
