@@ -16,7 +16,17 @@ class CsvDataController extends Controller
     {
         //
     }
+    public function getInfo()
+    {
+        $last= CsvData::latest('id')->first();
+        
+        $result['lastID']=$last->id;
+        $result['count']=CsvData::count();
+        
+        return response()->json(['success' => "Data returned successfully",
+        'result' => $result]);
 
+    }
     /**
      * Show the form for creating a new resource.
      *
@@ -35,7 +45,7 @@ class CsvDataController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return response()->json(['success' => "Route test"]);
     }
 
     /**

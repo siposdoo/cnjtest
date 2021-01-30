@@ -6,22 +6,22 @@
           <b-row>
             <b-col>
               <b-form-file
-                v-model="file1"
-                :state="Boolean(file1)"
+                v-model="csvFile"
+                :state="Boolean(csvFile)"
                 placeholder="Choose a CSV file for proccessing or drop it here..."
                 drop-placeholder="Drop file here..."
               >
               </b-form-file>
             </b-col>
           </b-row>
-          <b-row v-if="file1" align-v="end">
+          <b-row v-if="csvFile" align-v="end">
             <b-col>
               <div>
-                <i>Selected file: {{ file1 ? file1.name : "" }}</i>
+                <i>Selected file: {{ csvFile ? csvFile.name : "" }}</i>
               </div>
             </b-col>
           </b-row>
-          <b-row v-if="file1" align-v="end">
+          <b-row v-if="csvFile" align-v="end">
             <b-col>
               <b-form-checkbox
                 value="1"
@@ -60,15 +60,33 @@ export default {
   mounted() {},
   data() {
     return {
-      file1: null,
+      csvFile: null,
       lastInsertedId: null,
       rowCounts: null,
+      saveToMysql:0
     };
   },
   methods: {
-      submitFile(){
-          
-      }
+    submitFile() {
+      const data = new FormData();
+      data.append("csvfile", this.csvFile);
+      data.append("saveToMysql", this.saveToMysql);
+      this.$http
+        .post("/api/proccess", data, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+          if (response.data.error) {
+            
+          }
+          if (response.data.success) {
+            
+          }
+        })
+        .catch((error) => {});
+    },
   },
 };
 </script>
