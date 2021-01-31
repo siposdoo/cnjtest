@@ -38,7 +38,7 @@
               </button>
             </b-col>
           </b-row>
-           <b-row v-if="showErr" class="mt-3 w-100">
+          <b-row v-if="showErr" class="mt-3 w-100">
             <b-alert dismissible variant="danger" :show="showErr">{{
               contentErr
             }}</b-alert>
@@ -48,7 +48,7 @@
               contentSuccess
             }}</b-alert>
           </b-row>
-            <b-row v-if="showSuccess" class="mt-1">
+          <b-row v-if="showSuccess" class="mt-1">
             <ul class="list-group w-100">
               <li class="list-group-item active">Avg. price:</li>
               <li class="list-group-item ">{{ avgPrice }}</li>
@@ -58,6 +58,26 @@
             <ul class="list-group w-100">
               <li class="list-group-item active">Total houses sold:</li>
               <li class="list-group-item ">{{ totalHouseSold }}</li>
+            </ul>
+          </b-row>
+          <b-row v-if="showSuccess" class="mt-1">
+            <ul class="list-group w-100">
+              <li class="list-group-item active">Number of crimes in 2011:</li>
+              <li class="list-group-item ">{{ numberOfCrimes }}</li>
+            </ul>
+          </b-row>
+          <b-row v-if="showSuccess" class="mt-3">
+            <ul class="list-group w-100">
+              <li class="list-group-item active">
+                Avg price per year in London area:
+              </li>
+              <li
+                v-for="(value, year, index) in yearsAvr"
+                :key="index"
+                class="list-group-item"
+              >
+                {{ year }} - {{ value }}
+              </li>
             </ul>
           </b-row>
         </b-col>
@@ -80,7 +100,7 @@
 <script>
 export default {
   mounted() {
-      this.getMysqlInfo()
+    this.getMysqlInfo();
   },
   data() {
     return {
@@ -93,7 +113,10 @@ export default {
       contentSuccess: null,
       contentErr: null,
       totalHouseSold: null,
-      avgPrice: null
+      avgPrice: null,
+      numberOfCrimes: null,
+      yearsAvr: []
+
     };
   },
   methods: {
@@ -120,20 +143,22 @@ export default {
         })
         .then((response) => {
           if (response.data.error) {
-              this.showErr = true
-              this.contentErr = response.data.error
+            this.showErr = true;
+            this.contentErr = response.data.error;
           }
           if (response.data.success) {
+            this.getMysqlInfo();
 
-              this.getMysqlInfo()
-              
-              this.showSuccess = true
-              this.contentSuccess = response.data.success
+            this.showSuccess = true;
+            this.contentSuccess = response.data.success;
 
-              this.totalHouseSold = response.data.result.houses_sold.sum
-              this.avgPrice = response.data.result.average_price.avr
-
-          }
+            this.totalHouseSold = response.data.result.houses_sold.sum;
+            this.avgPrice = response.data.result.average_price.avr;
+            
+            this.numberOfCrimes = response.data.result.no_of_crimes_in_2011.sum;
+            this.yearsAvr = response.data.result.avgByYearsInLondon;
+         
+         }
         })
         .catch((error) => {});
     },
