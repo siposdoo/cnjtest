@@ -58,8 +58,32 @@ class CsvDataController extends Controller
       // If we have csv file with our header colums
       if( $validate == true )
       {
+          // put all data to array if > 0 
+           if(count($data)>1){
+                     
+            // Write to the database 
+            if(!empty($data)){
 
-      }
+                array_shift($data); //remove first row with header colums
+                $res=$this->loadDataToArr($data);
+               
+                // var_dump($res);
+                
+                $result['houses_sold']=$this->infoArrByKey($res,"houses_sold");
+                $result['average_price']=$this->infoArrByKey($res,"average_price");
+                
+                //if saveToMysql checked, split large insert query and store to DB
+                if($request->saveToMysql){
+                    foreach(array_chunk($res, 2000) as $key => $smallerArray) {
+                        foreach ($smallerArray as $index => $value) {
+                            $temp[$index] = $value;
+                        }
+                        CsvData::insert($temp);
+                    }
+                }
+            }
+        }
+    }
       
       if( $validate == true )
       {
@@ -71,11 +95,50 @@ class CsvDataController extends Controller
             return response()->json(['error' => 'Your .CSV headers are not correct. Must be: date,area,average_price,code,houses_sold,no_of_crimes,borough_flag']);
         }
     }
+    
+    function infoArrByKey( $arr,$key )
+    {
+        $sum = 0;
+        $i = 0;
+   
+        foreach ($arr as $item) {
+            $sum += $item[$key];
+            $i++;
+        }
+    
+        $res['items']=$i;
+        $res['sum']=$sum;
+        $res['key']=$key;
+        $res['avr']=round($sum/$i,2);
+     
+        return $res;
+    }
+ 
+    // load CSV data to array
+    public function loadDataToArr($data)
+    {
+        
+        foreach ($data as $key => $val) {
+            
+            $array[] = [
+             'date' => $val[0],
+             'area' => $val[1],
+             'average_price' => ($val[2]?$val[2]:0),
+             'code' => $val[3],
+             'houses_sold' => ($val[4]?$val[4]:0),
+             'no_of_crimes' => ($val[5]?$val[5]:'0.00'),
+             'borough_flag' =>  ($val[6]?$val[6]:0)];
+            
+            }
+       
+            return $array;
+    }
+    
     //Filter header row to check if contains our columns
     public function validateHeader($h)
     {
         $validate = false;
-
+        
         if( $h[0] == 'date'
         && $h[1] == 'area'
         && $h[2] == 'average_price'
@@ -86,6 +149,7 @@ class CsvDataController extends Controller
         {
             $validate = true;
         }
+
         return $validate;
     }
 

@@ -48,6 +48,18 @@
               contentSuccess
             }}</b-alert>
           </b-row>
+            <b-row v-if="showSuccess" class="mt-1">
+            <ul class="list-group w-100">
+              <li class="list-group-item active">Avg. price:</li>
+              <li class="list-group-item ">{{ avgPrice }}</li>
+            </ul>
+          </b-row>
+          <b-row v-if="showSuccess" class="mt-1">
+            <ul class="list-group w-100">
+              <li class="list-group-item active">Total houses sold:</li>
+              <li class="list-group-item ">{{ totalHouseSold }}</li>
+            </ul>
+          </b-row>
         </b-col>
         <b-col>
           <b-row>
@@ -79,7 +91,9 @@ export default {
       showErr: false,
       showSuccess: false,
       contentSuccess: null,
-      contentErr: null
+      contentErr: null,
+      totalHouseSold: null,
+      avgPrice: null
     };
   },
   methods: {
@@ -115,6 +129,9 @@ export default {
               
               this.showSuccess = true
               this.contentSuccess = response.data.success
+
+              this.totalHouseSold = response.data.result.houses_sold.sum
+              this.avgPrice = response.data.result.average_price.avr
 
           }
         })
