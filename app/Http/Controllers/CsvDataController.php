@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CsvData;
 use Illuminate\Http\Request;
+use DateTime;
 
 class CsvDataController extends Controller
 {
@@ -23,8 +24,7 @@ class CsvDataController extends Controller
         $result['lastID']=$last->id;
         $result['count']=CsvData::count();
         
-        return response()->json(['success' => "Data returned successfully",
-        'result' => $result]);
+        return response()->json(['success' => "Data returned successfully", 'result' => $result]);
 
     }
     /**
@@ -71,6 +71,9 @@ class CsvDataController extends Controller
                 
                 $result['houses_sold']=$this->infoArrByKey($res,"houses_sold");
                 $result['average_price']=$this->infoArrByKey($res,"average_price");
+
+                $result['no_of_crimes_in_2011']=$this->infoArrByKeyAndYear($res,"no_of_crimes",2011);
+                $result['avgByYearsInLondon']=$this->groupedArrByYearsArea($res,"E09000001","average_price");
                 
                 //if saveToMysql checked, split large insert query and store to DB
                 if($request->saveToMysql){
@@ -84,18 +87,67 @@ class CsvDataController extends Controller
             }
         }
     }
-      
-      if( $validate == true )
-      {
-          return response()->json(['success' => "Data parsed successfully",
-          'result' => $result]);
-        }
-        else
-        {
-            return response()->json(['error' => 'Your .CSV headers are not correct. Must be: date,area,average_price,code,houses_sold,no_of_crimes,borough_flag']);
-        }
+    
+    if( $validate == true )
+    {
+        return response()->json(['success' => "Data parsed successfully", 'result' => $result]);
+    }
+    else
+    {
+        return response()->json(['error' => 'Your .CSV headers are not correct. Must be: date,area,average_price,code,houses_sold,no_of_crimes,borough_flag']);
+    }
     }
     
+    function groupedArrByYearsArea( $arr, $code, $key){
+        
+        $sum = 0;
+        $i = 0;
+        $filtered=array();
+        $years=array();
+        
+        foreach ($arr as $item) {
+            
+            if($item['code']==$code){
+               array_push($filtered,$item);
+               $years[DateTime::createFromFormat("Y-m-d", $item['date'])->format("Y")]=0; 
+           
+            }
+        }
+        
+        foreach ($filtered as $item){
+            $temp['date']=$item['date'];
+            $temp[$key]=$item[$key];
+            
+            $years[DateTime::createFromFormat("Y-m-d", $item['date'])->format("Y")] += $item[$key];
+        }
+        
+        ksort($years, 1);
+        
+        return $years;
+    }
+    
+    function infoArrByKeyAndYear( $arr,$key,$year )
+    {
+        $sum = 0;
+        $i = 0;
+    
+        foreach ($arr as $item) {
+            if(DateTime::createFromFormat("Y-m-d", $item['date'])->format("Y") == $year){
+                $sum += $item[$key];
+                $i++;
+            }
+        }
+        
+         $res['items']=$i;
+         $res['sum']=$sum;
+         $res['key']=$key;
+         $res['year']=$year;
+         $res['avr']=round($sum/$i,2);
+         
+         return $res;
+    
+    }
+
     function infoArrByKey( $arr,$key )
     {
         $sum = 0;
